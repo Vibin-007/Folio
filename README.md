@@ -1,6 +1,17 @@
 # Folio
 
+![](https://img.shields.io/badge/vibe%20coded-8B5CF6?style=flat&logo=amp&logoColor=white)
+
 A minimalist PDF viewer for Windows, built with Flutter. Your documents, beautifully read.
+
+## Clone
+
+```bash
+git clone https://github.com/Vibin-007/Folio.git
+cd Folio
+flutter pub get
+flutter run
+```
 
 ## Features
 
