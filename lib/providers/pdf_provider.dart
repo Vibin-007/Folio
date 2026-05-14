@@ -53,6 +53,7 @@ class PdfProvider extends ChangeNotifier {
   String get fileName => _fileName;
   bool get isDocumentOpen => _document != null;
   double get pageWidth => _pageWidth;
+  bool get isCurrentPageMatched => _matchPages.contains(_currentPage) && _searchQuery.isNotEmpty;
 
   void setOnFitToWidthRequested(VoidCallback? callback) {
     _onFitToWidthRequested = callback;

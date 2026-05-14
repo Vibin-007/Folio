@@ -32,6 +32,10 @@ class AppColors {
   static const Color lightBg = lightBgBase;
   static const Color lightText = lightTextPrimary;
   static const Color lightSurface = lightBgSurface;
+
+  static const Color searchHighlight = Color(0x40FFEB3B);
+  static const Color searchHighlightCurrent = Color(0x60FFD600);
+  static const Color searchHighlightBorder = Color(0x80FFD600);
 }
 
 class AppTextStyles {
