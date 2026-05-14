@@ -196,8 +196,8 @@ class _PageCanvasState extends State<PageCanvas> {
     if (offset <= maxOffset) {
       _scrollController.animateTo(
         offset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
       );
     }
   }
@@ -281,7 +281,6 @@ class _PageCanvasState extends State<PageCanvas> {
 
   Widget _buildSinglePage(PdfProvider pdfProvider, bool isDark, Color bgColor) {
     final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final showHighlight = pdfProvider.isCurrentPageMatched;
 
     return Container(
       color: bgColor,
@@ -322,45 +321,23 @@ class _PageCanvasState extends State<PageCanvas> {
                 boundaryMargin: const EdgeInsets.all(200),
                 constrained: false,
                 child: Center(
-                  child: Stack(
-                    children: [
-                      _currentImage != null
-                          ? AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 150),
-                              child: Image.memory(
-                                _currentImage!,
-                                key: ValueKey(pdfProvider.currentPage),
-                                fit: BoxFit.contain,
-                              ),
-                            )
-                          : SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(textColor),
-                                strokeWidth: 1.5,
-                              ),
-                            ),
-                      if (showHighlight)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: AnimatedOpacity(
-                              opacity: showHighlight ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 200),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.searchHighlight,
-                                  border: Border.all(
-                                    color: AppColors.searchHighlightBorder,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
+                  child: _currentImage != null
+                      ? AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 150),
+                          child: Image.memory(
+                            _currentImage!,
+                            key: ValueKey(pdfProvider.currentPage),
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(textColor),
+                            strokeWidth: 1.5,
                           ),
                         ),
-                    ],
-                  ),
                 ),
               ),
             ),
@@ -391,8 +368,6 @@ class _PageCanvasState extends State<PageCanvas> {
             padding: const EdgeInsets.symmetric(vertical: 20),
             itemBuilder: (context, index) {
               final pageNum = index + 1;
-              final isMatched = pdfProvider.matchPages.contains(pageNum) && pdfProvider.searchQuery.isNotEmpty;
-              final isCurrent = pageNum == pdfProvider.currentPage;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: Center(
@@ -403,14 +378,13 @@ class _PageCanvasState extends State<PageCanvas> {
                       pageNum: pageNum,
                       document: pdfProvider.document,
                       pageWidth: pageWidth,
-                      isCurrentPage: isCurrent,
-                      isMatched: isMatched,
+                      isCurrentPage: pageNum == pdfProvider.currentPage,
                       isDark: isDark,
                       textPrimary: textPrimary,
                       textSecondary: textColor,
                       borderColor: borderColor,
                       onTap: () {
-                        if (!isCurrent) {
+                        if (pageNum != pdfProvider.currentPage) {
                           pdfProvider.goToPage(pageNum);
                         }
                       },
@@ -431,7 +405,6 @@ class _ContinuousPageItem extends StatefulWidget {
   final PdfDocument? document;
   final double pageWidth;
   final bool isCurrentPage;
-  final bool isMatched;
   final bool isDark;
   final Color textPrimary;
   final Color textSecondary;
@@ -444,7 +417,6 @@ class _ContinuousPageItem extends StatefulWidget {
     required this.document,
     required this.pageWidth,
     required this.isCurrentPage,
-    this.isMatched = false,
     required this.isDark,
     required this.textPrimary,
     required this.textSecondary,
@@ -516,19 +488,12 @@ class _ContinuousPageItemState extends State<_ContinuousPageItem> {
 
   @override
   Widget build(BuildContext context) {
-    final showMatchHighlight = widget.isMatched && !widget.isCurrentPage;
-    final showCurrentHighlight = widget.isCurrentPage && widget.isMatched;
-
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: showCurrentHighlight
-                ? AppColors.searchHighlightBorder
-                : widget.isCurrentPage
-                ? widget.textPrimary
-                : widget.borderColor,
+            color: widget.isCurrentPage ? widget.textPrimary : widget.borderColor,
             width: widget.isCurrentPage ? 2 : 1,
           ),
           color: Colors.white,
@@ -536,39 +501,25 @@ class _ContinuousPageItemState extends State<_ContinuousPageItem> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: _aspectRatio ?? 1.5,
-                  child: _image != null
-                      ? Image.memory(_image!, fit: BoxFit.contain)
-                      : Container(
-                          color: Colors.white,
-                          child: Center(
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  widget.textSecondary,
-                                ),
-                                strokeWidth: 1.5,
-                              ),
+            AspectRatio(
+              aspectRatio: _aspectRatio ?? 1.5,
+              child: _image != null
+                  ? Image.memory(_image!, fit: BoxFit.contain)
+                  : Container(
+                      color: Colors.white,
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              widget.textSecondary,
                             ),
+                            strokeWidth: 1.5,
                           ),
                         ),
-                ),
-                if (showMatchHighlight || showCurrentHighlight)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: Container(
-                        color: showCurrentHighlight
-                            ? AppColors.searchHighlightCurrent
-                            : AppColors.searchHighlight,
                       ),
                     ),
-                  ),
-              ],
             ),
             Container(
               width: double.infinity,
@@ -576,24 +527,14 @@ class _ContinuousPageItemState extends State<_ContinuousPageItem> {
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: widget.borderColor)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Page ${widget.pageNum}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontFamily: 'JetBrains Mono',
-                      color: widget.textSecondary,
-                    ),
-                  ),
-                  if (showMatchHighlight)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Icon(Icons.search_rounded, size: 12, color: AppColors.searchHighlightBorder),
-                    ),
-                ],
+              child: Text(
+                'Page ${widget.pageNum}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontFamily: 'JetBrains Mono',
+                  color: widget.textSecondary,
+                ),
               ),
             ),
           ],
