@@ -2,7 +2,7 @@
 
 A minimalist PDF viewer for Windows, built with Flutter. Your documents, beautifully read.
 
-> I vibe coded this application using Cursor.
+![](https://img.shields.io/badge/Built%20with%20%E2%9D%A4%EF%B8%8F%20and%20Vibes-FF6B9D?style=for-the-badge&logo=heart&logoColor=white)
 
 ## Clone
 
